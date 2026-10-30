@@ -1,9 +1,10 @@
 <?php
-$config = json_decode(file_get_contents('../config/config.json'), true);
+$config = json_decode(file_get_contents(__DIR__ . '/config.json'), true);
 define('DB_HOST', $config['DB_HOST']);
 define('DB_USER', $config['DB_USER']);
 define('DB_PASSWORD', $config['DB_PASSWORD']);
 define('DB_NAME', $config['DB_NAME']);
+define('DB_API_KEY', $config['DB_API_KEY']);
 
 class DefaultConfig {
     private static ?DefaultConfig $instance = null; 
