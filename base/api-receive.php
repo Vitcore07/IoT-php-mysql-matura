@@ -15,22 +15,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     response(405, 'Method Not Allowed');
 }
 
-if (!hash_equals(API_KEY, string($_POST['api_key'] ?? ''))) {
+if (!hash_equals(DB_API_KEY, (string)($_POST['api_key'] ?? ''))) {
     response(403, 'Forbidden: Invalid API Key');
 }
 
-$temp = floatval($_POST['temp'] ?? 0);
-$humid = floatval($_POST['humid'] ?? 0);
-$press = floatval($_POST['press'] ?? 0);
-$ppm = floatval($_POST['PPM'] ?? 0);
+$temp = filter_input(INPUT_POST, 'temp', FILTER_VALIDATE_FLOAT);
+$humid = filter_input(INPUT_POST, 'humid', FILTER_VALIDATE_FLOAT);
+$press = filter_input(INPUT_POST, 'press', FILTER_VALIDATE_FLOAT);
+$ppm = filter_input(INPUT_POST, 'ppm', FILTER_VALIDATE_FLOAT);
 
 foreach ([$temp, $humid, $press, $ppm] as $value) {
-    if ($value === null || $value === '') {
+    if ($value === null || $value === false) {
         response(400, 'Bad Request: Missing required parameters');
     }
 }
 
-$data = new Data(0, date('Y-m-d H:i:s'), $temp, $humid, $press, $ppm);
+$data = new Data($temp, $humid, $press, $ppm);
 
 $err = $data ->valid();
 if ($err !== "") {
@@ -39,7 +39,8 @@ if ($err !== "") {
 
 $err = $data->save();
 if ($err !== "") {
-    response(500, 'Internal Server Error: ' . $err);
+    error_log("Error saving data: " . $err);
+    response(500, 'Internal Server Error: Failed to save data');
 }
 
 response(200, 'Data saved successfully');
