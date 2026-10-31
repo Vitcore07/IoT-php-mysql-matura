@@ -1,5 +1,5 @@
 #pragma once
-const char* ssid = "xxx";
-const char* pass = "xxx";
+const char* ssid = "Cierna baca";
+const char* pass = "kebab123";
 const char* api  = "pesopesopeso";
-const char* url  = "xxx"; 
+const char* url  = "http://192.168.126.71/matura-esp-mysql/base/api-receive.php"; 

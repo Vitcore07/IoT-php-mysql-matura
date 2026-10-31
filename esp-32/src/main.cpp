@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -26,9 +25,11 @@ void setup() {
 
   WiFi.begin(ssid, pass);
   Serial.println("Connecting");
-  while(WiFi.status() != WL_CONNECTED) { 
+  int x = 0;
+  while(WiFi.status() != WL_CONNECTED && x < 30) { 
     delay(500);
     Serial.print(".");
+    x++;
   }
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
@@ -73,7 +74,6 @@ void loop() {
   if (millis() - lastSend < SEND_INTERVAL_MS) return;
   lastSend = millis();
 
-    
   float temp = bme.readTemperature();
   float humid = bme.readHumidity();
   float press = bme.readPressure();
@@ -87,22 +87,22 @@ void loop() {
   }
 
   if(WiFi.status()== WL_CONNECTED){
-    WiFiClientSecure client;
-    client.setInsecure(); 
-    HTTPClient https;
-    https.begin(client, url);
-    https.setTimeout(5000);
-    https.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    WiFiClient client;
+    HTTPClient http;
+    http.begin(client, url);
+    http.setTimeout(5000);
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
     
-    String httpRequestData = String("api_key=") + api + "&temp=" + String(bme.readTemperature())
-                          + "&humid=" + String(bme.readHumidity()) + "&press=" + String(bme.readPressure()/100.0F) 
-                          + "&ppm=600";
+    String httpRequestData = String("api_key=") + api + "&temp=" + String(temp, 2)
+                          + "&humid=" + String(humid, 2) + "&press=" + String(press/100.0F, 2) 
+                          + "&ppm=" + String(ppm, 1);
     Serial.print("httpRequestData: ");
     Serial.println(httpRequestData);
 
-    int httpResponseCode = https.POST(httpRequestData);
+    int httpResponseCode = http.POST(httpRequestData);
     
     if (httpResponseCode>0) {
+      Serial.println(http.getString());
       Serial.print("HTTP Response code: ");
       Serial.println(httpResponseCode);
     }
@@ -110,7 +110,7 @@ void loop() {
       Serial.print("Error code: ");
       Serial.println(httpResponseCode);
     }
-    https.end();
+    http.end();
   }
   else {
     Serial.println("WiFi Disconnected");
