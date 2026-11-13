@@ -1,5 +1,4 @@
 config/config.json
-esp32/include/secrets.h
 .env
 
 .DS_Store
